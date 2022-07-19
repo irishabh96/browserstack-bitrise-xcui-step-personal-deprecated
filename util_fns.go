@@ -69,15 +69,15 @@ func appendExtraCapabilities(payload string) []byte {
 func getTestFilters(payload *BrowserStackPayload) {
 	scanner := bufio.NewScanner(strings.NewReader(os.Getenv("filter_test")))
 	for scanner.Scan() {
-		test_sharding := scanner.Text()
+		test_filters := scanner.Text()
 
-		test_sharding = strings.TrimSpace(test_sharding)
+		test_filters = strings.TrimSpace(test_filters)
 
-		if test_sharding == "" {
+		if test_filters == "" {
 			continue
 		}
 
-		test_values := strings.Split(test_sharding, ",")
+		test_values := strings.Split(test_filters, ",")
 
 		for i := 0; i < len(test_values); i++ {
 			test_value := strings.Split(test_values[i], " ")

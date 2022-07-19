@@ -181,11 +181,6 @@ func checkBuildStatus(build_id string, username string, access_key string, waitF
 			return build_status, build_status_error
 		}
 
-		// if !waitForBuild && build_status != "" {
-		// 	clear <- true
-		// 	return build_status, build_status_error
-		// }
-
 		if build_status_error != nil || (!waitForBuild && build_status != "") {
 			clear <- true
 

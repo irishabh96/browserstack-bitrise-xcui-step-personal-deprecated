@@ -15,8 +15,8 @@ func main() {
 
 	username := os.Getenv("browserstack_username")
 	access_key := os.Getenv("browserstack_accesskey")
-	ios_app := os.Getenv("android_app_under_test")
-	bundle_path := os.Getenv("espresso_test_suite")
+	ios_app := os.Getenv("app_ipa_path")
+	bundle_path := os.Getenv("xcui_test_suite")
 
 	if username == "" || access_key == "" {
 		failf(UPLOAD_APP_ERROR, "invalid credentials")
@@ -26,9 +26,6 @@ func main() {
 		failf(FILE_NOT_AVAILABLE_ERROR)
 	}
 
-	//           zip -r ~/test_runner.zip 'Tests iOS-Runner.app'
-
-	// out, err := exec.Command("zip", "-r", "-D", "ideaz.zip", bundle_path+"/Debug-iphoneos/"+"Tests iOS-Runner.app").Output()
 	out1, err1 := exec.Command("cp", "-r", bundle_path+"/Debug-iphoneos/"+"Tests iOS-Runner.app", ".").Output()
 	if err1 != nil {
 		log.Print("err1")
