@@ -24,13 +24,9 @@ type BrowserStackPayload struct {
 	Project             string      `json:"project,omitempty"`
 	ProjectNotifyURL    string      `json:"projectNotifyURL,omitempty"`
 	UseLocal            bool        `json:"local,omitempty"`
-	ClearAppData        bool        `json:"clearPackageData,omitempty"`
-	DynamicTests        bool        `json:"singleRunnerInvocation,omitempty"`
-	Class               []string    `json:"class,omitempty"`
-	Package             []string    `json:"package,omitempty"`
-	Annotation          []string    `json:"annotation,omitempty"`
-	Size                []string    `json:"size,omitempty"`
-	UseMockServer       bool        `json:"allowDeviceMockServer,omitempty"`
+	SkipTesting         []string    `json:"skip-testing,omitempty"`
+	OnlyTesting         []string    `json:"only-testing,omitempty"`
+	DynamicTests        bool        `json:"dynamicTests,omitempty"`
 	UseTestSharding     interface{} `json:"shards,omitempty"`
 
 	// Apart from the inputs from UI, these are some more fields which we support.

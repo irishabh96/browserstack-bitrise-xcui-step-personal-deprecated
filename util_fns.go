@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/olekukonko/tablewriter"
 )
 
 func getDevices() ([]string, error) {
@@ -83,14 +85,10 @@ func getTestFilters(payload *BrowserStackPayload) {
 		for i := 0; i < len(test_values); i++ {
 			test_value := strings.Split(test_values[i], " ")
 			switch test_value[0] {
-			case "class":
-				*&payload.Class = append(*&payload.Class, test_value[1])
-			case "package":
-				*&payload.Package = append(*&payload.Package, test_value[1])
-			case "annotation":
-				*&payload.Annotation = append(*&payload.Annotation, test_value[1])
-			case "size":
-				*&payload.Size = append(*&payload.Size, test_value[1])
+			case "skip-testing":
+				*&payload.SkipTesting = append(*&payload.SkipTesting, test_value[1])
+			case "only-testing":
+				*&payload.OnlyTesting = append(*&payload.OnlyTesting, test_value[1])
 			}
 		}
 	}
@@ -104,9 +102,7 @@ func createBuildPayload() BrowserStackPayload {
 	debug_screenshots, _ := strconv.ParseBool(os.Getenv("debug_screenshots"))
 	video_recording, _ := strconv.ParseBool(os.Getenv("video_recording"))
 	use_local, _ := strconv.ParseBool(os.Getenv("use_local"))
-	clear_app_data, _ := strconv.ParseBool(os.Getenv("clear_app_data"))
 	use_dynamic_tests, _ := strconv.ParseBool(os.Getenv("use_dynamic_tests"))
-	use_mock_server, _ := strconv.ParseBool(os.Getenv("use_mock_server"))
 
 	sharding_data := TestSharding{}
 	if os.Getenv("use_test_sharding") != "" {
@@ -127,8 +123,6 @@ func createBuildPayload() BrowserStackPayload {
 		Project:             os.Getenv("project"),
 		ProjectNotifyURL:    os.Getenv("project_notify_url"),
 		UseLocal:            use_local,
-		ClearAppData:        clear_app_data,
-		UseMockServer:       use_mock_server,
 	}
 
 	getTestFilters(&payload)
@@ -202,6 +196,7 @@ func printBuildStatus(build_details map[string]interface{}) {
 
 	devices := build_details["devices"].([]interface{})
 	build_id := build_details["id"]
+	data := [][]string{}
 
 	if len(devices) == 1 {
 		sessions := devices[0].(map[string]interface{})["sessions"].([]interface{})[0].(map[string]interface{})
@@ -214,15 +209,19 @@ func printBuildStatus(build_details map[string]interface{}) {
 		passed_test := session_test_status["passed"]
 		device_name := devices[0].(map[string]interface{})["device"].(string)
 
-		log.Print("Build Id                                            Devices                                            Status")
-		log.Println("")
+		// log.Print("Build Id                                            Devices                                            Status")
+		// log.Println("")
 
 		if session_status == "passed" {
-			log.Printf("%s                %s                PASSED (%v/%v passed)", build_id, device_name, passed_test, total_test)
+			result := fmt.Sprintf("PASSED (%v/%v passed)", passed_test, total_test)
+			data = append(data, []string{build_id.(string), device_name, result})
+			// log.Printf("%s                %s                PASSED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 		}
 
 		if session_status == "failed" || session_status == "error" {
-			log.Printf("%s                %s                FAILED (%v/%v passed)", build_id, device_name, passed_test, total_test)
+			result := fmt.Sprintf("FAILED (%v/%v passed)", passed_test, total_test)
+			data = append(data, []string{build_id.(string), device_name, result})
+			// log.Printf("%s                %s                FAILED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 		}
 	} else {
 		for i := 0; i < len(devices); i++ {
@@ -236,16 +235,28 @@ func printBuildStatus(build_details map[string]interface{}) {
 			passed_test := session_test_status["passed"]
 			device_name := devices[i].(map[string]interface{})["device"].(string)
 
-			log.Print("Build Id                                            Devices                                            Status")
+			// log.Print("Build Id                                            Devices                                            Status")
 			if session_status == "passed" {
-				log.Printf("%s                %s                PASSED (%v/%v passed)", build_id, device_name, passed_test, total_test)
+				result := fmt.Sprintf("PASSED (%v/%v passed)", passed_test, total_test)
+				data = append(data, []string{build_id.(string), device_name, result})
+				// log.Printf("%s                %s                PASSED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 			}
 
 			if session_status == "failed" || session_status == "error" {
-				log.Printf("%s                %s                FAILED (%v/%v passed)", build_id, device_name, passed_test, total_test)
+				result := fmt.Sprintf("FAILED (%v/%v passed)", passed_test, total_test)
+				data = append(data, []string{build_id.(string), device_name, result})
+				// log.Printf("%s                %s                FAILED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 			}
 		}
 	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Build Id", "Devices", "Status"})
+
+	for _, v := range data {
+		table.Append(v)
+	}
+	table.Render()
 }
 
 func locateTestRunnerFileAndZip(test_suite_location string) error {
