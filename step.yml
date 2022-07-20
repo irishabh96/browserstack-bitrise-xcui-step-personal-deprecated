@@ -7,15 +7,17 @@
 # - Bitrise docs: http://devcenter.bitrise.io/
 # - Bitrise CLI guides: http://devcenter.bitrise.io/bitrise-cli/
 
+# add here @nitish
+
 title: |-
   BrowserStack App Automate - XCUITest
 summary: |
   Run your XCUITest tests on BrowserStack App Automate
 description: |
   Run your XCUITest tests on BrowserStack App Automate. This step collects the built IPA from $BITRISE_IPA_PATH  and test apk from `$BITRISE_TEST_RUNNER_PATH` Environment Variables
-website: https://github.com/browserstack/browserstack-bitrise-espresso-step
-source_code_url: https://github.com/browserstack/browserstack-bitrise-espresso-step
-support_url: https://github.com/browserstack/browserstack-bitrise-espresso-step/issues
+website: https://github.com/browserstack/browserstack-bitrise-xcui-step
+source_code_url: https://github.com/browserstack/browserstack-bitrise-xcui-step
+support_url: https://github.com/browserstack/browserstack-bitrise-xcui-step/issues
 host_os_tags:
   - osx-10.10
   - ubuntu-16.04
@@ -60,7 +62,7 @@ deps:
 
 toolkit:
   go:
-    package_name: github.com/browserstack/browserstack-bitrise-espresso-step
+    package_name: github.com/browserstack/browserstack-bitrise-xcui-step
 
 
 inputs:
@@ -94,10 +96,10 @@ inputs:
   - xcui_test_suite: 
     opts:
       title: "Xcui test suite"
-      summary: "Path to the testsuite (.ipa) file"
+      summary: "Path of the output bundle file"
       is_expand: true
       is_required: true
-      description: "Path of the test suite (.ipa) file"
+      description: "Path of the output bundle file. Add the $BITRISE_TEST_BUNDLE_PATH from Xcode Build for testing for iOS step or the absolute path of <AppnameUITests>-Runner.app"
       category: "App & Test Suite"
       
   # Devices
@@ -268,7 +270,7 @@ outputs:
       title: "BrowserStack Build Status"
       summary: Bs build status
       description: | 
-        Status of the executed build. Check values [here:] (https://www.browserstack.com/docs/app-automate/espresso/view-test-results)
+        Status of the executed build. Check values [here:] (https://www.browserstack.com/docs/app-automate/xcui/view-test-results)
 
 
 

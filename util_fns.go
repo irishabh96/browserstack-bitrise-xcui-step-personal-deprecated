@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -245,4 +246,43 @@ func printBuildStatus(build_details map[string]interface{}) {
 			}
 		}
 	}
+}
+
+func locateTestRunnerFileAndZip(test_suite_location string) error {
+
+	split_test_suite_path := strings.Split(test_suite_location, "/")
+	get_file_name := split_test_suite_path[len(split_test_suite_path)-1]
+
+	test_runner_app_path := ""
+
+	check_file_extension := strings.Split(get_file_name, ".")
+
+	// Checking 2 conditions here
+	// 1. test_suite_location - is this a the runner app
+	// 2. test_suite_location - if this is a directory, does runner app exists in this directory.
+	if len(check_file_extension) > 0 && check_file_extension[len(check_file_extension)-1] == "app" {
+		test_runner_app_path = test_suite_location
+	} else if strings.Contains(get_file_name, "test_bundle") {
+		// if test_suite_location is directory, then if runner app exits
+		if _, err := os.Stat(test_suite_location + TEST_RUNNER_RELATIVE_PATH_BITRISE); errors.Is(err, os.ErrNotExist) {
+			return errors.New(RUNNER_APP_NOT_FOUND)
+		} else {
+			test_runner_app_path = test_suite_location + TEST_RUNNER_RELATIVE_PATH_BITRISE
+		}
+	} else {
+		return errors.New(RUNNER_APP_NOT_FOUND)
+	}
+
+	_, err := exec.Command("cp", "-r", test_runner_app_path, ".").Output()
+	if err != nil {
+		return errors.New(RUNNER_APP_NOT_FOUND)
+	}
+
+	_, zipping_err := exec.Command("zip", "-r", "-D", "test_suite.zip", "Tests iOS-Runner.app").Output()
+	if zipping_err != nil {
+		// Todo: Update this error message
+		return errors.New(RUNNER_APP_NOT_FOUND)
+	}
+
+	return nil
 }

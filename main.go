@@ -13,36 +13,30 @@ func main() {
 	// Exit after 2hours 30 mins
 	time.AfterFunc(150*time.Minute, func() { failf("Session Timed Out") })
 
+	log.Print("Starting the build on BrowserStack App Automate")
+
 	username := os.Getenv("browserstack_username")
 	access_key := os.Getenv("browserstack_accesskey")
 	ios_app := os.Getenv("app_ipa_path")
-	bundle_path := os.Getenv("xcui_test_suite")
+	test_suite_path := os.Getenv("xcui_test_suite")
 
 	if username == "" || access_key == "" {
 		failf(UPLOAD_APP_ERROR, "invalid credentials")
 	}
 
-	if ios_app == "" || bundle_path == "" {
+	if ios_app == "" || test_suite_path == "" {
 		failf(FILE_NOT_AVAILABLE_ERROR)
 	}
 
-	out1, err1 := exec.Command("cp", "-r", bundle_path+"/Debug-iphoneos/"+"Tests iOS-Runner.app", ".").Output()
-	if err1 != nil {
-		log.Print("err1")
-		fmt.Println(err1.Error())
+	find_and_zip_file_err := locateTestRunnerFileAndZip(test_suite_path + TEST_RUNNER_RELATIVE_PATH_BITRISE)
+
+	if find_and_zip_file_err != nil {
+		failf(find_and_zip_file_err.Error())
 	}
 
-	fmt.Println("Done", out1)
+	test_runner_app := "test_suite.zip"
 
-	out, err := exec.Command("zip", "-r", "-D", "ideaz.zip", "Tests iOS-Runner.app").Output()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	fmt.Printf("The date is %s\n", out)
-	fmt.Println("Done")
-	test_runner_app := "ideaz.zip"
-
-	log.Print("Starting the build on BrowserStack App Automate")
+	log.Print("Uploading app on BrowserStack App Automate")
 
 	upload_app, err := upload(ios_app, APP_UPLOAD_ENDPOINT, username, access_key)
 
@@ -52,16 +46,15 @@ func main() {
 
 	upload_app_parsed_response := jsonParse(upload_app)
 
-	log.Print(upload_app_parsed_response)
-
 	if upload_app_parsed_response["app_url"] == "" {
-		log.Print("ehre")
 		failf(err.Error())
 	}
 
-	log.Print("heree", upload_app_parsed_response["app_url"])
+	log.Print("Successfully uploaded the app")
 
 	app_url := upload_app_parsed_response["app_url"].(string)
+
+	log.Print("Uploading test suite on BrowserStack App Automate")
 
 	upload_test_suite, err := upload(test_runner_app, TEST_SUITE_UPLOAD_ENDPOINT, username, access_key)
 
@@ -74,6 +67,8 @@ func main() {
 	if test_suite_upload_parsed_response["test_suite_url"] == "" {
 		failf(err.Error())
 	}
+
+	log.Print("Successfully uploaded the test suite")
 
 	test_suite_url := test_suite_upload_parsed_response["test_suite_url"].(string)
 
@@ -96,10 +91,6 @@ func main() {
 	build_status := ""
 
 	build_id := build_parsed_response["build_id"].(string)
-
-	log.Println("Waiting for results")
-
-	log.Printf("Build is running (BrowserStack build id %s)", build_id)
 
 	build_status, err = checkBuildStatus(build_id, username, access_key, check_build_status)
 
