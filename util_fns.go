@@ -104,7 +104,7 @@ func createBuildPayload() BrowserStackPayload {
 	video_recording, _ := strconv.ParseBool(os.Getenv("video_recording"))
 	use_local, _ := strconv.ParseBool(os.Getenv("use_local"))
 	clear_app_data, _ := strconv.ParseBool(os.Getenv("clear_app_data"))
-	use_single_runner_invocation, _ := strconv.ParseBool(os.Getenv("use_single_runner_invocation"))
+	use_dynamic_tests, _ := strconv.ParseBool(os.Getenv("use_dynamic_tests"))
 	use_mock_server, _ := strconv.ParseBool(os.Getenv("use_mock_server"))
 
 	sharding_data := TestSharding{}
@@ -117,17 +117,17 @@ func createBuildPayload() BrowserStackPayload {
 	}
 
 	payload := BrowserStackPayload{
-		InstrumentationLogs:    instrumentation_logs,
-		NetworkLogs:            network_logs,
-		DeviceLogs:             device_logs,
-		DebugScreenshots:       debug_screenshots,
-		VideoRecording:         video_recording,
-		SingleRunnerInvocation: use_single_runner_invocation,
-		Project:                os.Getenv("project"),
-		ProjectNotifyURL:       os.Getenv("project_notify_url"),
-		UseLocal:               use_local,
-		ClearAppData:           clear_app_data,
-		UseMockServer:          use_mock_server,
+		InstrumentationLogs: instrumentation_logs,
+		NetworkLogs:         network_logs,
+		DeviceLogs:          device_logs,
+		DebugScreenshots:    debug_screenshots,
+		VideoRecording:      video_recording,
+		DynamicTests:        use_dynamic_tests,
+		Project:             os.Getenv("project"),
+		ProjectNotifyURL:    os.Getenv("project_notify_url"),
+		UseLocal:            use_local,
+		ClearAppData:        clear_app_data,
+		UseMockServer:       use_mock_server,
 	}
 
 	getTestFilters(&payload)
