@@ -1,4 +1,4 @@
-module github.com/browserstack/browserstack-bitrise-espresso-step
+module github.com/browserstack/browserstack-bitrise-xcui-step
 
 go 1.18
 

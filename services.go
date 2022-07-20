@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -118,8 +119,12 @@ func checkBuildStatus(build_id string, username string, access_key string, waitF
 		return "", errors.New(fmt.Sprintf(FETCH_BUILD_STATUS_ERROR, "invalid build_id"))
 	}
 
+	if waitForBuild {
+		log.Println("Waiting for results")
+	}
+
 	// ticker can't have negative value
-	var POOLING_INTERVAL int = 10
+	var POOLING_INTERVAL int = 1000
 
 	if waitForBuild {
 		POOLING_INTERVAL = POOLING_INTERVAL_IN_MS
@@ -166,6 +171,8 @@ func checkBuildStatus(build_id string, username string, access_key string, waitF
 			build_status_error = errors.New(fmt.Sprintf(FETCH_BUILD_STATUS_ERROR, build_parsed_response["error"]))
 			return
 		}
+
+		log.Printf("Build is running (BrowserStack build id %s)", build_id)
 
 		build_status = build_parsed_response["status"].(string)
 	}, POOLING_INTERVAL, false)
