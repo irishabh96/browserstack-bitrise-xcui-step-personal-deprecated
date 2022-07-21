@@ -24,8 +24,12 @@ func main() {
 		failf(UPLOAD_APP_ERROR, "invalid credentials")
 	}
 
-	if ios_app == "" || test_suite_path == "" {
-		failf(FILE_NOT_AVAILABLE_ERROR)
+	if ios_app == "" {
+		failf(IPA_NOT_FOUND)
+	}
+
+	if test_suite_path == "" {
+		failf(RUNNER_APP_NOT_FOUND)
 	}
 
 	find_and_zip_file_err := locateTestRunnerFileAndZip(test_suite_path + TEST_RUNNER_RELATIVE_PATH_BITRISE)
@@ -34,7 +38,7 @@ func main() {
 		failf(find_and_zip_file_err.Error())
 	}
 
-	test_runner_app := "test_suite.zip"
+	test_runner_app := TEST_RUNNER_ZIP_FILE_NAME
 
 	log.Print("Uploading app on BrowserStack App Automate")
 

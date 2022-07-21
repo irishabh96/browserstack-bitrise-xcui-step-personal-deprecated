@@ -61,7 +61,6 @@ func appendExtraCapabilities(payload string) []byte {
 		key := test_values[0]
 
 		out[key] = test_values[1]
-
 	}
 
 	outputJSON, _ := json.Marshal(out)
@@ -209,19 +208,14 @@ func printBuildStatus(build_details map[string]interface{}) {
 		passed_test := session_test_status["passed"]
 		device_name := devices[0].(map[string]interface{})["device"].(string)
 
-		// log.Print("Build Id                                            Devices                                            Status")
-		// log.Println("")
-
 		if session_status == "passed" {
 			result := fmt.Sprintf("PASSED (%v/%v passed)", passed_test, total_test)
 			data = append(data, []string{build_id.(string), device_name, result})
-			// log.Printf("%s                %s                PASSED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 		}
 
 		if session_status == "failed" || session_status == "error" {
 			result := fmt.Sprintf("FAILED (%v/%v passed)", passed_test, total_test)
 			data = append(data, []string{build_id.(string), device_name, result})
-			// log.Printf("%s                %s                FAILED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 		}
 	} else {
 		for i := 0; i < len(devices); i++ {
@@ -235,17 +229,14 @@ func printBuildStatus(build_details map[string]interface{}) {
 			passed_test := session_test_status["passed"]
 			device_name := devices[i].(map[string]interface{})["device"].(string)
 
-			// log.Print("Build Id                                            Devices                                            Status")
 			if session_status == "passed" {
 				result := fmt.Sprintf("PASSED (%v/%v passed)", passed_test, total_test)
 				data = append(data, []string{build_id.(string), device_name, result})
-				// log.Printf("%s                %s                PASSED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 			}
 
 			if session_status == "failed" || session_status == "error" {
 				result := fmt.Sprintf("FAILED (%v/%v passed)", passed_test, total_test)
 				data = append(data, []string{build_id.(string), device_name, result})
-				// log.Printf("%s                %s                FAILED (%v/%v passed)", build_id, device_name, passed_test, total_test)
 			}
 		}
 	}
@@ -256,11 +247,11 @@ func printBuildStatus(build_details map[string]interface{}) {
 	for _, v := range data {
 		table.Append(v)
 	}
+
 	table.Render()
 }
 
 func locateTestRunnerFileAndZip(test_suite_location string) error {
-
 	split_test_suite_path := strings.Split(test_suite_location, "/")
 	get_file_name := split_test_suite_path[len(split_test_suite_path)-1]
 
@@ -274,7 +265,7 @@ func locateTestRunnerFileAndZip(test_suite_location string) error {
 	if len(check_file_extension) > 0 && check_file_extension[len(check_file_extension)-1] == "app" {
 		test_runner_app_path = test_suite_location
 	} else if strings.Contains(get_file_name, "test_bundle") {
-		// if test_suite_location is directory, then if runner app exits
+		// if test_suite_location is a directory instead of the file, then check if runner app exits
 		if _, err := os.Stat(test_suite_location + TEST_RUNNER_RELATIVE_PATH_BITRISE); errors.Is(err, os.ErrNotExist) {
 			return errors.New(RUNNER_APP_NOT_FOUND)
 		} else {
@@ -286,13 +277,12 @@ func locateTestRunnerFileAndZip(test_suite_location string) error {
 
 	_, err := exec.Command("cp", "-r", test_runner_app_path, ".").Output()
 	if err != nil {
-		return errors.New(RUNNER_APP_NOT_FOUND)
+		return errors.New(fmt.Sprintf(FILE_ZIP_ERROR, err))
 	}
 
-	_, zipping_err := exec.Command("zip", "-r", "-D", "test_suite.zip", "Tests iOS-Runner.app").Output()
+	_, zipping_err := exec.Command("zip", "-r", "-D", TEST_RUNNER_ZIP_FILE_NAME, "Tests iOS-Runner.app").Output()
 	if zipping_err != nil {
-		// Todo: Update this error message
-		return errors.New(RUNNER_APP_NOT_FOUND)
+		return errors.New(fmt.Sprintf(FILE_ZIP_ERROR, zipping_err))
 	}
 
 	return nil

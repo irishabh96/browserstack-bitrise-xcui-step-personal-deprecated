@@ -1,8 +1,10 @@
 package main
 
 import (
+	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -84,5 +86,26 @@ func TestGetDevices(t *testing.T) {
 
 		t.Log(err)
 		require.Error(t, err)
+	}
+}
+
+func TestLocateTestRunnerFileAndZip(t *testing.T) {
+	t.Log("It should throw error when test runner file is not found in the path")
+	{
+		expected := RUNNER_APP_NOT_FOUND
+
+		file_error := locateTestRunnerFileAndZip(TEST_RUNNER_RELATIVE_PATH_BITRISE)
+
+		require.Error(t, file_error, expected)
+	}
+	t.Log("It should zip the runner when correct path is passed")
+	{
+		devices := locateTestRunnerFileAndZip("./test/assets/Tests iOS-Runner.app")
+
+		require.NoError(t, devices)
+		assert.FileExists(t, TEST_RUNNER_ZIP_FILE_NAME)
+
+		os.Remove("Tests iOS-Runner.app")
+		os.Remove("test_suite.zip")
 	}
 }
